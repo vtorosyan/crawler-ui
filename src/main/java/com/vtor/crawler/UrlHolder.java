@@ -12,25 +12,26 @@ final class UrlHolder {
     private final String url;
 
     UrlHolder(String url) {
-        if (!VALIDATOR.isValid(url)) {
-            throw new IllegalArgumentException("Given URL is not valid " + url);
-        }
         this.url = url;
     }
 
     boolean holdsValidUrl() {
-        return get().isPresent();
+        return VALIDATOR.isValid(url);
     }
 
-    Optional<URL> get() {
-        try {
-            return Optional.of(new URL(url));
-        } catch (MalformedURLException mex) {
+    Optional<URL> url() {
+        return get(url);
+    }
+
+    Optional<URL> robotsUrl() {
+        Optional<URL> url = url();
+        if (!url.isPresent()) {
             return Optional.empty();
         }
+        return get(url.get().getProtocol() + "://" + url.get().getHost() + "/robots.txt");
     }
 
-    String getWithoutWww() {
+    String urlWithoutWww() {
         int index = url.indexOf("://www.");
         if (index != -1) {
             return url.substring(0, index + 3) + url.substring(index + 7);
@@ -38,4 +39,12 @@ final class UrlHolder {
         return url;
     }
 
+    private Optional<URL> get(String url) {
+        try {
+            return Optional.of(new URL(url));
+        } catch (MalformedURLException mex) {
+            return Optional.empty();
+        }
+    }
+    
 }
