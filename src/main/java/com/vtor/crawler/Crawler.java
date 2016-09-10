@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 import static java.util.Collections.singletonList;
 
 class Crawler extends JFrame {
+    private static final Pattern SEARCH_TERM_PATTERN = Pattern.compile("[\\s]+");
 
     private boolean          crawlingIsInProgress;
     private SearchComponent  searchComponent;
@@ -160,12 +161,12 @@ class Crawler extends JFrame {
             pageContents = pageContents.toLowerCase();
         }
 
-        Pattern p = Pattern.compile("[\\s]+");
-        String[] terms = p.split(searchComponent.searchText());
+        String[] terms = SEARCH_TERM_PATTERN.split(searchComponent.searchText());
 
         for (String term : terms) {
-            if ((searchComponent.isCaseSensitiveSearch() && !pageContents.contains(term)) ||
-                !pageContents.contains(term.toLowerCase())) {
+            boolean doesNotMatchForCaseSensitive =
+                    searchComponent.isCaseSensitiveSearch() && !pageContents.contains(term);
+            if (doesNotMatchForCaseSensitive || !pageContents.contains(term.toLowerCase())) {
                 return false;
             }
         }
