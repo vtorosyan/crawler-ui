@@ -2,6 +2,8 @@ group 'com.vtor.crawler'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
+apply plugin:'application'
+mainClassName = "com.vtor.crawler.Crawler"
 
 sourceCompatibility = 1.8
 
