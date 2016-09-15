@@ -33,12 +33,11 @@ final class Page {
             return "";
         }
 
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(urlHolder.url().get().openStream()));
-            String eachLine;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(urlHolder.url().get().openStream()))) {
+            String line;
             StringBuilder builder = new StringBuilder();
-            while ((eachLine = reader.readLine()) != null) {
-                builder.append(eachLine);
+            while ((line = reader.readLine()) != null) {
+                builder.append(line);
             }
             return builder.toString();
         } catch (IOException iox) {
@@ -65,11 +64,12 @@ final class Page {
 
             link = normalize(urlHolder.url().get(), link);
             UrlHolder urlHolder = new UrlHolder(link);
-            if (limitToHost && !this.urlHolder.url().get().getHost().toLowerCase()
-                                              .equals(urlHolder.url().get().getHost().toLowerCase())) {
-                continue;
-            }
-            if (!urlHolder.holdsValidUrl() || alreadyProcessedUrls.contains(link)) {
+            boolean isTheSameHost = this.urlHolder.url().get().getHost().toLowerCase()
+                                                  .equals(urlHolder.url().get().getHost().toLowerCase());
+            boolean isLimitToHostButTheHostIsNotTheSame = limitToHost && !isTheSameHost;
+            boolean urlIsNotValidOrProcessed = !urlHolder.holdsValidUrl() || alreadyProcessedUrls.contains(link);
+
+            if (isLimitToHostButTheHostIsNotTheSame || urlIsNotValidOrProcessed) {
                 continue;
             }
             links.add(urlHolder.urlWithoutWww());
@@ -79,18 +79,9 @@ final class Page {
 
     private String normalize(URL url, String link) {
         if (!link.contains("://")) {
-            if (link.charAt(0) == '/') {
-                return "http://" + url.getHost() + link;
-            } else {
-                String file = url.getFile();
-                if (file.indexOf('/') == -1) {
-                    return "http://" + url.getHost() + "/" + link;
-                } else {
-                    String path = file.substring(0, file.lastIndexOf('/') + 1);
-                    return "http://" + url.getHost() + path + link;
-                }
-            }
+            return normalizeWithProtocol(url, link);
         }
+
         int index = link.indexOf('#');
         if (index != -1) {
             return link.substring(0, index);
@@ -98,9 +89,22 @@ final class Page {
         return link;
     }
 
+    private String normalizeWithProtocol(URL url, String link) {
+        if (link.charAt(0) == '/') {
+            return "http://" + url.getHost() + link;
+        }
+
+        String file = url.getFile();
+        if (file.indexOf('/') == -1) {
+            return "http://" + url.getHost() + "/" + link;
+        }
+
+        String path = file.substring(0, file.lastIndexOf('/') + 1);
+        return "http://" + url.getHost() + path + link;
+    }
+
     private boolean linkShouldBeIgnored(String link) {
-        return link.length() < 1 || link.charAt(0) == '#' || link.contains("mailto:") ||
-               link.toLowerCase().contains("javascript");
+        return link.length() < 1 || link.charAt(0) == '#' || link.contains("mailto:");
     }
 
 }

@@ -37,12 +37,11 @@ final class Robots {
 
     private List<String> disallowedUrls() {
         List<String> disallowedUrls = new ArrayList<>();
-        try {
-            BufferedReader r = new BufferedReader(new InputStreamReader(urlHolder.robotsUrl().get().openStream()));
-            String eachLine;
-            while ((eachLine = r.readLine()) != null) {
-                if (eachLine.indexOf("Disallow:") == 0) {
-                    String path = eachLine.substring("Disallow:".length());
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(urlHolder.robotsUrl().get().openStream()))) {
+            String line;
+            while ((line = r.readLine()) != null) {
+                if (line.indexOf("Disallow:") == 0) {
+                    String path = line.substring("Disallow:".length());
 
                     int index = path.indexOf("#");
                     if (index != -1) {

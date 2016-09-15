@@ -32,10 +32,10 @@ class Crawler extends JFrame {
 
     private void buildMainWindow() {
         setTitle("Crawler UI");
-        setSize(600, 600);
+        setSize(700, 700);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                actionExit();
+                exit();
             }
         });
     }
@@ -45,9 +45,9 @@ class Crawler extends JFrame {
         JMenu fileMenu = new JMenu("File");
         fileMenu.setMnemonic(KeyEvent.VK_F);
 
-        JMenuItem fileExitMenuItem = new JMenuItem("Exit", KeyEvent.VK_X);
-        fileExitMenuItem.addActionListener(e -> actionExit());
-        fileMenu.add(fileExitMenuItem);
+        JMenuItem exitMenuItem = new JMenuItem("Exit", KeyEvent.VK_X);
+        exitMenuItem.addActionListener(e -> exit());
+        fileMenu.add(exitMenuItem);
 
         menuBar.add(fileMenu);
         setJMenuBar(menuBar);
@@ -62,7 +62,7 @@ class Crawler extends JFrame {
         getContentPane().add(matchesComponent.getPanel(), BorderLayout.CENTER);
     }
 
-    private void actionExit() {
+    private void exit() {
         System.exit(0);
     }
 
@@ -83,11 +83,10 @@ class Crawler extends JFrame {
     }
 
     private void start() {
-        Thread thread = new Thread(() -> {
+        new Thread(() -> {
             reset();
             process();
-        });
-        thread.start();
+        }).start();
     }
 
     private void process() {
@@ -118,14 +117,14 @@ class Crawler extends JFrame {
 
     private void showNoSearchResultDialogIfNecessary() {
         if (matchesComponent.getTable().getRowCount() == 0) {
-            JOptionPane.showMessageDialog(Crawler.this, "Search text was not found. Please try another.",
+            JOptionPane.showMessageDialog(Crawler.this, "Search text was not found.",
                                           "Search text not found", JOptionPane.INFORMATION_MESSAGE
             );
         }
     }
 
     private void showError(String message) {
-        JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(this, message, "Something went wrong", JOptionPane.ERROR_MESSAGE);
     }
 
     private void crawl(PrintWriter writer) {
@@ -150,7 +149,7 @@ class Crawler extends JFrame {
             Page page = new Page(urlHolder, searchComponent.isSearchLimitedToHost());
             notProcessed.addAll(page.getLinks(processed));
 
-            addIfMatches(page, url, writer);
+            addResultIfMatches(page, url, writer);
             searchComponent.updateStats(url, processed.size(), notProcessed.size());
         }
     }
@@ -173,7 +172,7 @@ class Crawler extends JFrame {
         return true;
     }
 
-    private void addIfMatches(Page page, String url, PrintWriter writer) {
+    private void addResultIfMatches(Page page, String url, PrintWriter writer) {
         if (!searchTextMatches(page.download())) {
             return;
         }
@@ -187,8 +186,8 @@ class Crawler extends JFrame {
     }
 
     public static void main(String[] args) {
-        Crawler ct = new Crawler();
-        ct.setVisible(true);
+        Crawler crawler = new Crawler();
+        crawler.setVisible(true);
     }
 
 }
